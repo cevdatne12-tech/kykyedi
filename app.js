@@ -58,12 +58,27 @@ if (orderForm) {
     orderForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const phone = document.getElementById('phone').value;
+        // DEĞİŞİKLİK BURADA BAŞLIYOR: .trim() ekleyerek boşlukları temizleyelim
+        const phone = document.getElementById('phone').value.trim(); 
         const block = document.querySelector('input[name="block"]:checked').value;
         const roomNumber = parseInt(roomInput.value);
         const wrapCount = parseInt(document.getElementById('wrapCount').value);
         const note = document.getElementById('note').value;
 
+        // --- YENİ EKLENECEK KOD BLOĞU (Telefon Kontrolü) ---
+        if (!phone) {
+            Swal.fire('Uyarı', 'Lütfen telefon numaranızı giriniz.', 'warning');
+            return;
+        }
+        
+        // İsterseniz numaranın uzunluğunu da (örn: en az 10 hane) kontrol edebilirsiniz:
+        if (phone.length < 10) {
+            Swal.fire('Uyarı', 'Lütfen geçerli bir telefon numarası giriniz.', 'warning');
+            return;
+        }
+        // --- EKLENECEK KOD BLOĞU SONU ---
+
+        // Mevcut kod devam ediyor...
         // Validate Room Number
         if (!roomRegex.test(roomNumber)) {
             roomInput.classList.add('is-invalid');
@@ -501,4 +516,5 @@ Object.keys(filterButtons).forEach(status => {
             listenForOrders(); // Reload with new filter
         });
     }
+
 });
