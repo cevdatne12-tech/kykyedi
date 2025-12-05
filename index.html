@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Çiğ Köfte Siparişi</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+
+    <!-- Admin Shortcut Button -->
+    <button id="adminShortcutBtn" class="btn btn-light position-fixed top-0 end-0 m-3 shadow-sm rounded-circle"
+        style="width: 50px; height: 50px; z-index: 1000;" title="Yönetici Girişi">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+            class="bi bi-person-fill-lock" viewBox="0 0 16 16">
+            <path
+                d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-9 8c0 1 1 1 1 1h5v-1a1.9 1.9 0 0 1 .01-.2 4.49 4.49 0 0 1 1.534-3.693C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Zm7 0a1 1 0 0 1 1-1v-1a2 2 0 1 1 4 0v1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-2Zm3-3a1 1 0 0 0-1 1v1h2v-1a1 1 0 0 0-1-1Z" />
+        </svg>
+    </button>
+
+    <div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-gradient-custom">
+        <div class="d-flex flex-column align-items-center w-100">
+            <div class="card shadow-lg border-0 rounded-4 order-card mb-4" style="max-width: 500px; width: 100%;">
+                <div class="card-body p-5">
+                    <h1 class="text-center mb-4 fw-bold text-primary-custom">Çiğ Köfte Siparişi</h1>
+                    <p class="text-center text-muted mb-5">Lezzetli çiğ köfte kapına gelsin!</p>
+
+                    <form id="orderForm">
+                        <!-- Telefon Numarası -->
+                        <div class="mb-4">
+                            <label for="phone" class="form-label fw-semibold">Telefon Numarası (İsteğe Bağlı)</label>
+                            <input type="tel" class="form-control form-control-lg" id="phone"
+                                placeholder="05XX XXX XX XX">
+                        </div>
+
+                        <!-- Blok Seçimi -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold d-block">Blok Seçimi</label>
+                            <div class="btn-group w-100" role="group" aria-label="Blok Seçimi">
+                                <input type="radio" class="btn-check" name="block" id="blockA" value="A" checked>
+                                <label class="btn btn-outline-primary btn-lg" for="blockA">A Blok</label>
+
+                                <input type="radio" class="btn-check" name="block" id="blockB" value="B">
+                                <label class="btn btn-outline-primary btn-lg" for="blockB">B Blok</label>
+                            </div>
+                        </div>
+
+                        <!-- Oda Numarası -->
+                        <div class="mb-4">
+                            <label for="roomNumber" class="form-label fw-semibold">Oda Numarası</label>
+                            <input type="number" class="form-control form-control-lg" id="roomNumber"
+                                placeholder="Örn: 105" required>
+                            <div id="roomFeedback" class="invalid-feedback">
+                                Lütfen geçerli bir oda numarası giriniz (100-1099 arası).
+                            </div>
+                        </div>
+
+                        <!-- Dürüm Sayısı -->
+                        <div class="mb-4">
+                            <label for="wrapCount" class="form-label fw-semibold">Dürüm Sayısı</label>
+                            <input type="number" class="form-control form-control-lg" id="wrapCount" min="1" value="1"
+                                required>
+                        </div>
+
+                        <!-- Sipariş Notu -->
+                        <div class="mb-4">
+                            <label for="note" class="form-label fw-semibold">Sipariş Notu (Opsiyonel)</label>
+                            <textarea class="form-control" id="note" rows="3"
+                                placeholder="Acı sos fazla olsun..."></textarea>
+                        </div>
+
+                        <!-- Sipariş Ver Butonu -->
+                        <div class="d-grid">
+                            <button type="submit"
+                                class="btn btn-primary-custom btn-lg py-3 fw-bold shadow-sm position-relative"
+                                id="submitBtn">
+                                <span class="btn-text">Sipariş Ver</span>
+                                <div class="spinner-border spinner-border-sm text-light d-none" role="status"
+                                    id="loadingSpinner">
+                                    <span class="visually-hidden">Yükleniyor...</span>
+                                </div>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Order Tracking Section -->
+            <div class="card shadow-lg border-0 rounded-4 order-card" style="max-width: 500px; width: 100%;">
+                <div class="card-body p-4">
+                    <h5 class="text-center fw-bold text-secondary mb-3">Sipariş Takibi</h5>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="trackingId" placeholder="Sipariş Kodu (ID)">
+                        <button class="btn btn-outline-primary" type="button" id="pasteLastOrderBtn"
+                            title="Son Siparişi Getir">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-clock-history" viewBox="0 0 16 16">
+                                <path
+                                    d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .979.654l-.615.789a6.996 6.996 0 0 0-.418-.302zm1.834 1.79a6.99 6.99 0 0 0-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7.08 7.08 0 0 0-.214-.468l.893-.45a7.976 7.976 0 0 1 .45 1.088l-.95.313a7.023 7.023 0 0 0-.179-.483zm.53 2.507a6.991 6.991 0 0 0-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1 .025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.957 7.957 0 0 1-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.29.346-.594.486-.908l.914.405c-.16.36-.345.706-.555 1.038l-.845-.535zm-.964 1.205c.122-.122.239-.248.35-.378l.758.653a8.073 8.073 0 0 1-.401.433l-.707-.708z" />
+                                <path
+                                    d="M8 1a7 7 0 1 0 4.95 4.95A7 7 0 0 0 8 1Zm3.5 7.5a.5.5 0 0 1-.5.5H8a.5.5 0 0 1-.5-.5V4a.5.5 0 0 1 1 0v3.5h2.5a.5.5 0 0 1 .5.5Z" />
+                            </svg>
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" id="trackBtn">Sorgula</button>
+                    </div>
+                    <div id="trackingResult" class="d-none">
+                        <div class="alert alert-light border text-center">
+                            <strong>Durum:</strong> <span id="trackStatus"></span><br>
+                            <small class="text-muted" id="trackDetails"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Yönetici Girişi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="adminEmail" class="form-label">E-posta</label>
+                            <input type="email" class="form-control" id="adminEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="adminPassword" class="form-label">Şifre</label>
+                            <input type="password" class="form-control" id="adminPassword" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary-custom">Giriş Yap</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div class="modal fade" id="adminModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header bg-dark text-white border-0">
+                    <h5 class="modal-title fw-bold">Yönetici Paneli</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h6 class="text-muted">Gelen Siparişler</h6>
+                        <div class="d-flex align-items-center gap-2">
+                            <button id="clearDeliveredBtn" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                    class="bi bi-trash3-fill me-1" viewBox="0 0 16 16">
+                                    <path
+                                        d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z" />
+                                </svg>
+                                Teslim Edilenleri Sil
+                            </button>
+                            <div class="badge bg-primary rounded-pill px-3 py-2" id="orderCount">0 Sipariş</div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Buttons -->
+                    <div class="d-flex gap-2 mb-3 overflow-auto pb-2">
+                        <button class="btn btn-dark active" id="filterAllBtn">Tümü</button>
+                        <button class="btn btn-outline-warning" id="filterPendingBtn">Bekliyor</button>
+                        <button class="btn btn-outline-primary" id="filterPreparingBtn">Hazırlanıyor</button>
+                        <button class="btn btn-outline-info" id="filterOnWayBtn">Yola Çıktı</button>
+                        <button class="btn btn-outline-success" id="filterDeliveredBtn">Teslim Edildi</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle shadow-sm bg-white rounded-3 overflow-hidden">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Zaman</th>
+                                    <th scope="col">Blok/Oda</th>
+                                    <th scope="col">Not</th>
+                                    <th scope="col">Tel</th>
+                                    <th scope="col">Durum</th>
+                                    <th scope="col">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <!-- Siparişler buraya gelecek -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary" id="prevPageBtn" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-chevron-left" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
+                        </svg>
+                        Önceki
+                    </button>
+                    <span class="text-muted small" id="pageIndicator">Sayfa 1 (Canlı)</span>
+                    <button type="button" class="btn btn-outline-secondary" id="nextPageBtn">
+                        Sonraki
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-chevron-right" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Config & App Logic -->
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="app.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

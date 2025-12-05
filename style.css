@@ -1,0 +1,86 @@
+:root {
+    --primary-color: #ff4757;
+    --primary-hover: #ff6b81;
+    --bg-gradient-start: #fdfbfb;
+    --bg-gradient-end: #ebedee;
+    --card-bg: #ffffff;
+    --text-color: #2f3542;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-color);
+    background: #f1f2f6;
+}
+
+.bg-gradient-custom {
+    background: linear-gradient(135deg, #fff0f0 0%, #ffe4e4 100%);
+}
+
+.order-card {
+    width: 100%;
+    max-width: 500px;
+    background: var(--card-bg);
+    transition: transform 0.3s ease;
+}
+
+.text-primary-custom {
+    color: var(--primary-color);
+}
+
+.btn-primary-custom {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover, .btn-check:checked + .btn-outline-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.form-control:focus {
+    border-color: var(--primary-hover);
+    box-shadow: 0 0 0 0.25rem rgba(255, 71, 87, 0.25);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.order-card {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Admin Table Styles */
+.status-badge {
+    font-size: 0.85em;
+    padding: 0.5em 0.8em;
+}
+
+.status-pending { background-color: #ffa502; color: white; }
+.status-preparing { background-color: #3742fa; color: white; }
+.status-delivered { background-color: #2ed573; color: white; }
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .card-body {
+        padding: 2rem !important;
+    }
+}
