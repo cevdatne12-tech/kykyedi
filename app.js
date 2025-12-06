@@ -527,11 +527,52 @@ if (trackBtn) {
 
             // Real-time listener for tracking
             trackingUnsubscribe = onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    trackingResult.classList.remove('d-none');
-                    trackStatus.innerHTML = getStatusBadge(data.status);
-                    trackDetails.textContent = `${data.block} Blok - ${data.roomNumber}`;
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        trackingResult.classList.remove('d-none');
+        trackStatus.innerHTML = getStatusBadge(data.status);
+        trackDetails.textContent = `${data.block} Blok - ${data.roomNumber}`;
+
+        // --- YENİ KOD: İptal Butonu Kontrolü ---
+        const cancelBtn = document.getElementById('cancelOrderBtn');
+        if (cancelBtn) {
+            // Sadece "pending" (Bekliyor) ise iptal edilebilir
+            if (data.status === 'pending') {
+                cancelBtn.classList.remove('d-none');
+                
+                // Butona tıklama olayı (Tek seferlik tanımlamak için onclick kullanıyoruz)
+                cancelBtn.onclick = async () => {
+                    const result = await Swal.fire({
+                        title: 'Sipariş İptal Edilsin mi?',
+                        text: "Henüz hazırlanmaya başlanmadığı için iptal edebilirsiniz.",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Evet, İptal Et',
+                        cancelButtonText: 'Vazgeç',
+                        confirmButtonColor: '#d33'
+                    });
+
+                    if (result.isConfirmed) {
+                        try {
+                            // Dokümanı siliyoruz
+                            await deleteDoc(doc(db, "orders", id));
+                            
+                            // Arayüzü temizle
+                            trackingResult.classList.add('d-none');
+                            trackingIdInput.value = '';
+                            
+                            Swal.fire('İptal Edildi', 'Siparişiniz başarıyla iptal edildi.', 'success');
+                        } catch (error) {
+                            console.error("Cancel Error:", error);
+                            Swal.fire('Hata', 'Sipariş iptal edilemedi. Hazırlanmaya başlanmış olabilir.', 'error');
+                        }
+                    }
+                };
+            } else {
+                // Hazırlanıyor veya yola çıktıysa buton gizlenir
+                cancelBtn.classList.add('d-none');
+            }
+        }
                 } else {
                     Swal.fire('Bulunamadı', 'Bu kodla eşleşen bir sipariş bulunamadı.', 'error');
                     trackingResult.classList.add('d-none');
@@ -691,4 +732,5 @@ function initLiveFeed() {
 
 // Uygulama açılınca vitrini başlat
 initLiveFeed();
+
 
