@@ -136,12 +136,16 @@
                         </button>
                         <button class="btn btn-outline-secondary" type="button" id="trackBtn">Sorgula</button>
                     </div>
-                    <div id="trackingResult" class="d-none">
-                        <div class="alert alert-light border text-center">
-                            <strong>Durum:</strong> <span id="trackStatus"></span><br>
-                            <small class="text-muted" id="trackDetails"></small>
-                        </div>
-                    </div>
+                    <div id="trackingResult" class="d-none mt-3"> <div class="alert alert-light border text-center shadow-sm">
+        <h6 class="fw-bold mb-2">Sipariş Durumu</h6>
+        <div class="mb-2" id="trackStatus"></div>
+        <small class="text-muted d-block mb-3" id="trackDetails"></small>
+        
+        <button id="cancelOrderBtn" class="btn btn-outline-danger btn-sm d-none">
+            Siparişi İptal Et
+        </button>
+    </div>
+</div>
                 </div>
             </div>
         </div>
@@ -273,6 +277,7 @@
 
 
 </html>
+
 
 
 
