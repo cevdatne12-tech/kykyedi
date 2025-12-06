@@ -663,5 +663,3 @@ function initLiveFeed() {
 
 // Uygulama açılınca vitrini başlat
 initLiveFeed();
-
-
