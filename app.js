@@ -20,7 +20,6 @@ const shopClosedAlert = document.getElementById('shopClosedAlert');
 const displayClosedMessage = document.getElementById('displayClosedMessage');
 
 // Admin Elements
-// Admin Elements
 const adminModalEl = document.getElementById('adminModal');
 const adminModal = adminModalEl ? new bootstrap.Modal(adminModalEl) : null;
 
@@ -65,7 +64,7 @@ if (orderForm) {
         e.preventDefault();
 
         // DEĞİŞİKLİK BURADA BAŞLIYOR: .trim() ekleyerek boşlukları temizleyelim
-        const phone = document.getElementById('phone').value.trim(); 
+        const phone = document.getElementById('phone').value.trim();
         const block = document.querySelector('input[name="block"]:checked').value;
         const roomNumber = parseInt(roomInput.value);
         const wrapCount = parseInt(document.getElementById('wrapCount').value);
@@ -76,7 +75,7 @@ if (orderForm) {
             Swal.fire('Uyarı', 'Lütfen telefon numaranızı giriniz.', 'warning');
             return;
         }
-        
+
         // İsterseniz numaranın uzunluğunu da (örn: en az 10 hane) kontrol edebilirsiniz:
         if (phone.length < 10) {
             Swal.fire('Uyarı', 'Lütfen geçerli bir telefon numarası giriniz.', 'warning');
@@ -103,39 +102,39 @@ if (orderForm) {
         setLoading(true);
 
         try {
-    // ÖNCE MAĞAZA AÇIK MI KONTROL ET
-    const settingsSnap = await getDoc(doc(db, "settings", "shop"));
-    if (settingsSnap.exists() && settingsSnap.data().isOpen === false) {
-        setLoading(false);
-        Swal.fire({
-            icon: 'error',
-            title: 'Sipariş Alınamadı',
-            text: 'Üzgünüz, mağazamız şu an sipariş alımına kapatılmıştır.'
-        });
-        return; // İşlemi durdur
-    }
+            // ÖNCE MAĞAZA AÇIK MI KONTROL ET
+            const settingsSnap = await getDoc(doc(db, "settings", "shop"));
+            if (settingsSnap.exists() && settingsSnap.data().isOpen === false) {
+                setLoading(false);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Sipariş Alınamadı',
+                    text: 'Üzgünüz, mağazamız şu an sipariş alımına kapatılmıştır.'
+                });
+                return; // İşlemi durdur
+            }
             // 1. ASIL SİPARİŞİ KAYDET (Gizli - Admin Görür)
-    const docRef = await addDoc(collection(db, "orders"), {
-        phone: phone,
-        block: block,
-        roomNumber: roomNumber,
-        wrapCount: wrapCount,
-        note: note,
-        status: 'pending',
-        timestamp: serverTimestamp()
-    });
+            const docRef = await addDoc(collection(db, "orders"), {
+                phone: phone,
+                block: block,
+                roomNumber: roomNumber,
+                wrapCount: wrapCount,
+                note: note,
+                status: 'pending',
+                timestamp: serverTimestamp()
+            });
 
-    // 2. VİTRİN FİŞİNİ KAYDET (Herkese Açık - Maskelenmiş Veri)
-    // Oda numarasını maskele (Örn: 105 -> 1**)
-    const roomStr = roomNumber.toString();
-    const maskedRoom = roomStr.substring(0, 1) + "**"; 
+            // 2. VİTRİN FİŞİNİ KAYDET (Herkese Açık - Maskelenmiş Veri)
+            // Oda numarasını maskele (Örn: 105 -> 1**)
+            const roomStr = roomNumber.toString();
+            const maskedRoom = roomStr.substring(0, 1) + "**";
 
-    await addDoc(collection(db, "public_orders"), {
-        block: block,
-        maskedRoom: maskedRoom,
-        wrapCount: wrapCount,
-        timestamp: serverTimestamp()
-    });
+            await addDoc(collection(db, "public_orders"), {
+                block: block,
+                maskedRoom: maskedRoom,
+                wrapCount: wrapCount,
+                timestamp: serverTimestamp()
+            });
 
             // Save ID to LocalStorage
             localStorage.setItem('lastOrderId', docRef.id);
@@ -234,11 +233,6 @@ if (loginForm) {
     });
 }
 
-// Add Sign Out Button to Admin Modal (Optional but good practice)
-// For now, we just rely on page refresh or session expiry, 
-// but let's add a simple log out logic if needed.
-
-
 // Helper Functions
 function getStatusBadge(status) {
     switch (status) {
@@ -302,8 +296,6 @@ function renderOrders(docs) {
         ordersTableBody.appendChild(row);
     });
 }
-
-
 
 function updatePaginationUI(hasMore) {
     pageIndicator.textContent = currentPage === 1 ? 'Sayfa 1 (Canlı)' : `Sayfa ${currentPage} (Geçmiş)`;
@@ -524,6 +516,7 @@ if (trackBtn) {
         }
     });
 }
+
 // Filter Buttons Logic
 const filterButtons = {
     'all': document.getElementById('filterAllBtn'),
@@ -548,11 +541,12 @@ Object.keys(filterButtons).forEach(status => {
             listenForOrders(); // Reload with new filter
         });
     }
+});
+// (Düzeltme: Burada fazladan bir } vardı, kaldırıldı)
 
-    // --- MAĞAZA DURUM YÖNETİMİ (SHOP SETTINGS) ---
+// --- MAĞAZA DURUM YÖNETİMİ (SHOP SETTINGS) ---
 
 // 1. Mağaza Durumunu Gerçek Zamanlı Dinle (Hem kullanıcı hem admin için)
-// Bu kod 'settings' koleksiyonundaki 'shop' dökümanını dinler.
 onSnapshot(doc(db, "settings", "shop"), (docSnap) => {
     let isOpen = true; // Varsayılan açık
     let message = "Mesai saatleri dışındayız.";
@@ -580,9 +574,8 @@ onSnapshot(doc(db, "settings", "shop"), (docSnap) => {
         shopStatusToggle.checked = isOpen;
         shopStatusLabel.textContent = isOpen ? "AÇIK" : "KAPALI";
         shopStatusLabel.className = isOpen ? "form-check-label fw-bold text-success" : "form-check-label fw-bold text-danger";
-        if(shopClosedMessageInput && docSnap.exists()) {
-             // Admin inputunu sadece boşsa veya sayfa ilk yüklendiğinde doldur ki yazarken değişmesin
-             if(shopClosedMessageInput.value === "") shopClosedMessageInput.value = message;
+        if (shopClosedMessageInput && docSnap.exists()) {
+            if (shopClosedMessageInput.value === "") shopClosedMessageInput.value = message;
         }
     }
 });
@@ -599,7 +592,7 @@ if (saveSettingsBtn) {
                 message: message,
                 updatedAt: serverTimestamp()
             });
-            
+
             // Toggle yazısını güncelle
             shopStatusLabel.textContent = isOpen ? "AÇIK" : "KAPALI";
             shopStatusLabel.className = isOpen ? "form-check-label fw-bold text-success" : "form-check-label fw-bold text-danger";
@@ -615,7 +608,10 @@ if (saveSettingsBtn) {
             console.error("Settings Error:", error);
             Swal.fire('Hata', 'Ayarlar kaydedilemedi.', 'error');
         }
-    });
+    }); // (Düzeltme: Burada eksik olan ) ve } eklendi)
+}
+
+// --- CANLI VİTRİN MODÜLÜ ---
 const liveFeedList = document.getElementById('liveFeedList');
 
 function initLiveFeed() {
@@ -634,7 +630,7 @@ function initLiveFeed() {
 
         snapshot.docs.forEach(doc => {
             const data = doc.data();
-            
+
             // Zaman Hesabı (Basit)
             let timeText = "Az önce";
             if (data.timestamp) {
