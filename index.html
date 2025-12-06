@@ -34,6 +34,17 @@
                     <h1 class="text-center mb-4 fw-bold text-primary-custom">Çiğ Köfte Siparişi</h1>
                     <p class="text-center text-muted mb-5">Lezzetli çiğ köfte kapına gelsin!</p>
 
+                    <div id="shopClosedAlert" class="text-center py-5 d-none">
+    <div class="mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#dc3545" class="bi bi-shop-window" viewBox="0 0 16 16">
+            <path d="M2.97 1.35A1 1 0 0 1 3.73 1h8.54a1 1 0 0 1 .76.35l2.609 3.044A1.5 1.5 0 0 1 16 5.37v.255a2.375 2.375 0 0 1-4.25 1.458A2.37 2.37 0 0 1 9.875 6.8a2.37 2.37 0 0 1-4.25-1.458 2.37 2.37 0 0 1-4.125-1.458v-.255c0-.372.139-.716.382-1.01l2.61-3.045zM6.5 2h3l-2.003 2.337L6.5 2zm7 0h-2l1.333 3.111L13.5 2zM1 4v.68c.241.25.403.553.483.876a3.535 3.535 0 0 0 4.28 2.651 3.535 3.535 0 0 0 5.484-.002 3.535 3.535 0 0 0 4.28-2.651A2.254 2.254 0 0 0 16 4.68V4H1z"/>
+            <path d="M1 5v7.5a2.5 2.5 0 0 0 2.5 2.5h9a2.5 2.5 0 0 0 2.5-2.5V5H1zm11.5 7a.5.5 0 0 1 0 1h-9a.5.5 0 0 1 0-1h9z"/>
+        </svg>
+    </div>
+    <h3 class="fw-bold text-danger">Şu An Hizmet Veremiyoruz</h3>
+    <p class="text-muted lead" id="displayClosedMessage">Mesai saatleri dışındayız.</p>
+</div>
+
                     <form id="orderForm">
                         <!-- Telefon Numarası -->
                         <div class="mb-4">
@@ -202,6 +213,21 @@
                         </table>
                     </div>
                 </div>
+                <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h6 class="fw-bold mb-3">Mağaza Durumu</h6>
+        <div class="d-flex align-items-center gap-3">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="shopStatusToggle" checked>
+                <label class="form-check-label fw-bold" for="shopStatusToggle" id="shopStatusLabel">AÇIK</label>
+            </div>
+            <div class="flex-grow-1">
+                <input type="text" class="form-control" id="shopClosedMessage" placeholder="Kapanış mesajı (Örn: Mesai saatleri dışındayız)">
+            </div>
+            <button class="btn btn-primary-custom btn-sm" id="saveSettingsBtn">Ayarları Kaydet</button>
+        </div>
+    </div>
+</div>
                 <div class="modal-footer border-0 bg-light justify-content-between">
                     <button type="button" class="btn btn-outline-secondary" id="prevPageBtn" disabled>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -234,4 +260,5 @@
 
 
 </html>
+
 
