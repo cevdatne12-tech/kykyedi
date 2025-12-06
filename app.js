@@ -1,6 +1,6 @@
 import { db } from './firebase-config.js';
 
-import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, doc, updateDoc, getDoc, limit, startAfter, getDocs, where, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, doc, updateDoc, getDoc, limit, startAfter, getDocs, where, deleteDoc, writeBatch, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
 const auth = getAuth();
@@ -12,6 +12,12 @@ const loadingSpinner = document.getElementById('loadingSpinner');
 const btnText = document.querySelector('.btn-text');
 const roomInput = document.getElementById('roomNumber');
 const roomFeedback = document.getElementById('roomFeedback');
+const shopStatusToggle = document.getElementById('shopStatusToggle');
+const shopStatusLabel = document.getElementById('shopStatusLabel');
+const shopClosedMessageInput = document.getElementById('shopClosedMessage');
+const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const shopClosedAlert = document.getElementById('shopClosedAlert');
+const displayClosedMessage = document.getElementById('displayClosedMessage');
 
 // Admin Elements
 // Admin Elements
@@ -97,6 +103,17 @@ if (orderForm) {
         setLoading(true);
 
         try {
+    // ÖNCE MAĞAZA AÇIK MI KONTROL ET
+    const settingsSnap = await getDoc(doc(db, "settings", "shop"));
+    if (settingsSnap.exists() && settingsSnap.data().isOpen === false) {
+        setLoading(false);
+        Swal.fire({
+            icon: 'error',
+            title: 'Sipariş Alınamadı',
+            text: 'Üzgünüz, mağazamız şu an sipariş alımına kapatılmıştır.'
+        });
+        return; // İşlemi durdur
+    }
             const docRef = await addDoc(collection(db, "orders"), {
                 phone: phone,
                 block: block,
@@ -272,6 +289,8 @@ function renderOrders(docs) {
         ordersTableBody.appendChild(row);
     });
 }
+
+
 
 function updatePaginationUI(hasMore) {
     pageIndicator.textContent = currentPage === 1 ? 'Sayfa 1 (Canlı)' : `Sayfa ${currentPage} (Geçmiş)`;
@@ -517,4 +536,74 @@ Object.keys(filterButtons).forEach(status => {
         });
     }
 
+    // --- MAĞAZA DURUM YÖNETİMİ (SHOP SETTINGS) ---
+
+// 1. Mağaza Durumunu Gerçek Zamanlı Dinle (Hem kullanıcı hem admin için)
+// Bu kod 'settings' koleksiyonundaki 'shop' dökümanını dinler.
+onSnapshot(doc(db, "settings", "shop"), (docSnap) => {
+    let isOpen = true; // Varsayılan açık
+    let message = "Mesai saatleri dışındayız.";
+
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        isOpen = data.isOpen;
+        message = data.message || message;
+    }
+
+    // Arayüzü Güncelle (Kullanıcı Tarafı)
+    if (shopClosedAlert && orderForm) {
+        if (isOpen) {
+            shopClosedAlert.classList.add('d-none'); // Uyarıyı gizle
+            orderForm.classList.remove('d-none');    // Formu göster
+        } else {
+            shopClosedAlert.classList.remove('d-none'); // Uyarıyı göster
+            orderForm.classList.add('d-none');          // Formu gizle
+            if (displayClosedMessage) displayClosedMessage.textContent = message;
+        }
+    }
+
+    // Admin Panelini Güncelle (Eğer açıksa)
+    if (shopStatusToggle) {
+        shopStatusToggle.checked = isOpen;
+        shopStatusLabel.textContent = isOpen ? "AÇIK" : "KAPALI";
+        shopStatusLabel.className = isOpen ? "form-check-label fw-bold text-success" : "form-check-label fw-bold text-danger";
+        if(shopClosedMessageInput && docSnap.exists()) {
+             // Admin inputunu sadece boşsa veya sayfa ilk yüklendiğinde doldur ki yazarken değişmesin
+             if(shopClosedMessageInput.value === "") shopClosedMessageInput.value = message;
+        }
+    }
 });
+
+// 2. Admin: Ayarları Kaydetme Fonksiyonu
+if (saveSettingsBtn) {
+    saveSettingsBtn.addEventListener('click', async () => {
+        const isOpen = shopStatusToggle.checked;
+        const message = shopClosedMessageInput.value;
+
+        try {
+            await setDoc(doc(db, "settings", "shop"), {
+                isOpen: isOpen,
+                message: message,
+                updatedAt: serverTimestamp()
+            });
+            
+            // Toggle yazısını güncelle
+            shopStatusLabel.textContent = isOpen ? "AÇIK" : "KAPALI";
+            shopStatusLabel.className = isOpen ? "form-check-label fw-bold text-success" : "form-check-label fw-bold text-danger";
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Güncellendi',
+                text: `Mağaza durumu: ${isOpen ? 'AÇIK' : 'KAPALI'} olarak ayarlandı.`,
+                timer: 1500,
+                showConfirmButton: false
+            });
+        } catch (error) {
+            console.error("Settings Error:", error);
+            Swal.fire('Hata', 'Ayarlar kaydedilemedi.', 'error');
+        }
+    });
+}
+
+});
+
