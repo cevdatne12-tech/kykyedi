@@ -278,21 +278,29 @@ function renderOrders(docs) {
         }
 
         row.innerHTML = `
-            <td>${dateStr}</td>
-            <td><span class="fw-bold">${order.block} Blok</span> - ${order.roomNumber}</td>
-            <td><span class="badge bg-info text-dark">${order.wrapCount || 1} Adet</span></td>
-            <td>${order.note || '-'}</td>
-            <td>${order.phone || '-'}</td>
-            <td>${getStatusBadge(order.status)}</td>
-            <td>
-                <div class="btn-group btn-group-sm" role="group">
-                    <button type="button" class="btn btn-outline-warning" onclick="updateStatus('${id}', 'pending')">Bekliyor</button>
-                    <button type="button" class="btn btn-outline-primary" onclick="updateStatus('${id}', 'preparing')">Hazırlanıyor</button>
-                    <button type="button" class="btn btn-outline-info" onclick="updateStatus('${id}', 'on_way')">Yola Çıktı</button>
-                    <button type="button" class="btn btn-outline-success" onclick="updateStatus('${id}', 'delivered')">Teslim</button>
-                </div>
-            </td>
-        `;
+    <td>${dateStr}</td>
+    <td><span class="fw-bold">${order.block} Blok</span> - ${order.roomNumber}</td>
+    <td><span class="badge bg-info text-dark">${order.wrapCount || 1} Adet</span></td>
+    <td>${order.note || '-'}</td>
+    <td>${order.phone || '-'}</td>
+    <td>${getStatusBadge(order.status)}</td>
+    <td>
+        <div class="d-flex gap-2">
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-outline-warning" onclick="updateStatus('${id}', 'pending')">Bekliyor</button>
+                <button type="button" class="btn btn-outline-primary" onclick="updateStatus('${id}', 'preparing')">Hazırlanıyor</button>
+                <button type="button" class="btn btn-outline-info" onclick="updateStatus('${id}', 'on_way')">Yola Çıktı</button>
+                <button type="button" class="btn btn-outline-success" onclick="updateStatus('${id}', 'delivered')">Teslim</button>
+            </div>
+            
+            <button class="btn btn-danger btn-sm" onclick="deleteOrder('${id}')" title="Siparişi Sil">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                    <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
+                </svg>
+            </button>
+        </div>
+    </td>
+`;
         ordersTableBody.appendChild(row);
     });
 }
@@ -404,6 +412,30 @@ window.updateStatus = async (id, newStatus) => {
     } catch (error) {
         console.error("Error updating status:", error);
         Swal.fire('Hata', 'Durum güncellenemedi.', 'error');
+    }
+};
+
+window.deleteOrder = async (id) => {
+    const result = await Swal.fire({
+        title: 'Sipariş Silinsin mi?',
+        text: "Bu işlem geri alınamaz!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Evet, Sil',
+        cancelButtonText: 'Vazgeç'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            await deleteDoc(doc(db, "orders", id));
+            // Tablo listener sayesinde otomatik güncellenir
+            Swal.fire('Silindi!', 'Sipariş başarıyla silindi.', 'success');
+        } catch (error) {
+            console.error("Delete Error:", error);
+            Swal.fire('Hata', 'Silme işlemi başarısız.', 'error');
+        }
     }
 };
 
@@ -659,3 +691,4 @@ function initLiveFeed() {
 
 // Uygulama açılınca vitrini başlat
 initLiveFeed();
+
