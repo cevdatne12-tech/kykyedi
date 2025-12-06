@@ -114,15 +114,28 @@ if (orderForm) {
         });
         return; // İşlemi durdur
     }
-            const docRef = await addDoc(collection(db, "orders"), {
-                phone: phone,
-                block: block,
-                roomNumber: roomNumber,
-                wrapCount: wrapCount,
-                note: note,
-                status: 'pending',
-                timestamp: serverTimestamp()
-            });
+            // 1. ASIL SİPARİŞİ KAYDET (Gizli - Admin Görür)
+    const docRef = await addDoc(collection(db, "orders"), {
+        phone: phone,
+        block: block,
+        roomNumber: roomNumber,
+        wrapCount: wrapCount,
+        note: note,
+        status: 'pending',
+        timestamp: serverTimestamp()
+    });
+
+    // 2. VİTRİN FİŞİNİ KAYDET (Herkese Açık - Maskelenmiş Veri)
+    // Oda numarasını maskele (Örn: 105 -> 1**)
+    const roomStr = roomNumber.toString();
+    const maskedRoom = roomStr.substring(0, 1) + "**"; 
+
+    await addDoc(collection(db, "public_orders"), {
+        block: block,
+        maskedRoom: maskedRoom,
+        wrapCount: wrapCount,
+        timestamp: serverTimestamp()
+    });
 
             // Save ID to LocalStorage
             localStorage.setItem('lastOrderId', docRef.id);
@@ -603,7 +616,52 @@ if (saveSettingsBtn) {
             Swal.fire('Hata', 'Ayarlar kaydedilemedi.', 'error');
         }
     });
+const liveFeedList = document.getElementById('liveFeedList');
+
+function initLiveFeed() {
+    if (!liveFeedList) return;
+
+    // Sadece son 3 siparişi getir (Sade ve temiz görüntü için)
+    const q = query(collection(db, "public_orders"), orderBy("timestamp", "desc"), limit(3));
+
+    onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+            liveFeedList.innerHTML = '<div class="text-center text-muted small py-2">Sipariş akışı bekleniyor... 🚀</div>';
+            return;
+        }
+
+        liveFeedList.innerHTML = ''; // Temizle
+
+        snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            
+            // Zaman Hesabı (Basit)
+            let timeText = "Az önce";
+            if (data.timestamp) {
+                const seconds = Math.floor((new Date() - data.timestamp.toDate()) / 1000);
+                if (seconds > 60) timeText = Math.floor(seconds / 60) + " dk önce";
+                if (seconds > 3600) timeText = "1 saat önce";
+            }
+
+            // HTML Şablonu (Minimalist)
+            const row = document.createElement('div');
+            row.className = "d-flex justify-content-between align-items-center p-2 rounded-3 bg-light bg-opacity-50 border-bottom border-light";
+            row.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-primary rounded-pill me-2">${data.block}</span>
+                    <span class="text-dark fw-semibold small">Oda ${data.maskedRoom}</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="text-muted small me-2">${data.wrapCount} Çiğ Köfte</span>
+                    <span class="badge bg-white text-secondary border shadow-sm" style="font-size: 0.7em;">${timeText}</span>
+                </div>
+            `;
+            liveFeedList.appendChild(row);
+        });
+    });
 }
 
-});
+// Uygulama açılınca vitrini başlat
+initLiveFeed();
+
 
